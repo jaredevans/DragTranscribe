@@ -24,7 +24,7 @@
 
 ## 📦 Install (DMG)
 
-1. **Download** `DragTranscribe-1.0.0.dmg`.
+1. **Download** `DragTranscribe-1.0.0.dmg` from the Releases on the top-right side of this page.
 2. **Open** the DMG.
 3. **Drag the entire `DragTranscribe` folder** to the **Applications** shortcut in the DMG window.  
 4. Eject the DragTranscribe DMG on your Desktop.
