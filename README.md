@@ -49,10 +49,7 @@ Your Applications folder should now contain:
 1. Open **/Applications/DragTranscribe/**.
 2. Double-click **`1-Allow-Run.command`**  
    - Clears macOS quarantine flags and sets execute permissions.
-   - If macOS warns you, choose **Open** (or **System Settings → Privacy & Security → Open Anyway**).
-
-> Gatekeeper tip: If the app is blocked, **Right-click → Open → Open** to approve it once.
-
+   - If macOS warns you, Go to **System Settings → Privacy & Security → Open Anyway**.
 ---
 
 ## 🚀 Use the app
