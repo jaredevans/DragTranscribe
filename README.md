@@ -56,6 +56,7 @@ Your Applications folder should now contain:
 
 1. Launch **`DragTranscribe.app`**.  
    - The app will **auto-detect** its install folder. If it can’t, click **Set Install…** and choose the `DragTranscribe` folder in **Applications**.
+   - If macOS warns you, Go to **System Settings → Privacy & Security → Open Anyway**.
 2. **First model download** (one-time):
    - If the model isn’t present when transcribing, the app will prompt to download it (~3 GB) into `models/`. This will take a while so be patient.
    - Or run **`2-Download-Model.command`** manually to fetch it ahead of time.
