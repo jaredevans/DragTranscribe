@@ -1,4 +1,4 @@
-# app.py
+# app.py — simplified install directory logic
 import os, sys, unicodedata, subprocess, threading, objc, pathlib
 from AppKit import (
     NSApplication, NSApp, NSWindow, NSView, NSButton, NSTextField, NSTextView,
@@ -10,14 +10,11 @@ from AppKit import (
 )
 from Foundation import NSURL, NSUserDefaults, NSBundle
 
-
 APP_ID = "com.example.dragtranscribe"
 PREF_INSTALL_DIR = "InstallDir"
 
-
 def _normalize(p: str) -> str:
     return unicodedata.normalize("NFC", p)
-
 
 def _run_transcribe_stream(cmd_argv, on_line, on_done):
     try:
@@ -46,65 +43,25 @@ def _run_transcribe_stream(cmd_argv, on_line, on_done):
     finally:
         on_done(rc)
 
-
-def _find_app_bundle_dir_from(path_str: str) -> str | None:
-    p = pathlib.Path(path_str).resolve()
-    for parent in [p] + list(p.parents):
-        if parent.suffix == ".app" and parent.is_dir():
-            return str(parent)
-    return None
-
-
-def _candidate_has_transcribe(candidate_dir: str) -> bool:
-    """Accept presence (not executability) of transcribe.sh for first-run friendliness."""
-    script = os.path.join(candidate_dir, "bin", "transcribe.sh")
-    return os.path.isfile(script)
-
-
-def _default_install_guess() -> str | None:
-    """
-    Guess install dir (contains bin/, models/, etc.) by:
-      1) NSBundle -> parent of .app
-      2) sys.argv[0] -> parent of .app
-      3) __file__ -> parent of .app
-      4) project-root fallback (.. from this file)
-    Only requires that bin/transcribe.sh *exists*.
-    """
-    # 1) NSBundle
+def _app_parent_dir() -> str | None:
+    """Return the directory containing DragTranscribe.app."""
     try:
         mb = NSBundle.mainBundle()
         if mb is not None:
             bundle_path = str(mb.bundlePath())
             if bundle_path.endswith(".app"):
-                parent = os.path.dirname(bundle_path)
-                if _candidate_has_transcribe(parent):
-                    return parent
+                return os.path.dirname(bundle_path)
     except Exception:
         pass
-
-    # 2) argv[0]
-    exe = os.path.abspath(sys.argv[0])
-    app_dir = _find_app_bundle_dir_from(exe)
-    if app_dir:
-        candidate = os.path.dirname(app_dir)
-        if _candidate_has_transcribe(candidate):
-            return candidate
-
-    # 3) this file location
-    here = os.path.abspath(__file__)
-    app_dir2 = _find_app_bundle_dir_from(here)
-    if app_dir2:
-        candidate2 = os.path.dirname(app_dir2)
-        if _candidate_has_transcribe(candidate2):
-            return candidate2
-
-    # 4) fallback: project root guess
-    proj_root = os.path.abspath(os.path.join(os.path.dirname(here), ".."))
-    if _candidate_has_transcribe(proj_root):
-        return proj_root
-
     return None
 
+def _install_dir_guess() -> str | None:
+    parent = _app_parent_dir()
+    if parent:
+        candidate = os.path.join(parent, "bin", "transcribe.sh")
+        if os.path.isfile(candidate):
+            return parent
+    return None
 
 class AppState:
     def __init__(self):
@@ -112,12 +69,13 @@ class AppState:
         self.load_prefs()
 
         env_override = os.environ.get("DRAGTRANSCRIBE_INSTALL_DIR")
-        if not self.install_dir and env_override and _candidate_has_transcribe(env_override):
-            self.install_dir = env_override
-            self.save_prefs()
+        if not self.install_dir and env_override:
+            if os.path.isfile(os.path.join(env_override, "bin", "transcribe.sh")):
+                self.install_dir = env_override
+                self.save_prefs()
 
         if not self.install_dir:
-            guess = _default_install_guess()
+            guess = _install_dir_guess()
             if guess:
                 self.install_dir = guess
                 self.save_prefs()
@@ -151,7 +109,6 @@ class AppState:
     def download_script(self):
         return os.path.join(self.install_dir, "bin", "download_model.sh") if self.install_dir else None
 
-
 class DropView(NSView):
     DROP_TYPES = ["public.file-url", "public.url", "NSFilenamesPboardType"]
 
@@ -177,6 +134,17 @@ class DropView(NSView):
 
     def clearOutput_(self, _):
         self.output_view.setString_("")
+
+    def _show_reinstall_alert(self):
+        alert = NSAlert.alloc().init()
+        alert.setMessageText_("Install folder not found")
+        alert.setInformativeText_(
+            "DragTranscribe couldn’t locate its install folder.\n\n"
+            "Make sure you installed the *entire* DragTranscribe folder into /Applications,\n"
+            "then launch DragTranscribe.app from there."
+        )
+        alert.addButtonWithTitle_("OK")
+        alert.runModal()
 
     def _ensure_model_then(self, cont_fn):
         model_path = self.state.model_file()
@@ -225,17 +193,9 @@ class DropView(NSView):
         self.performSelectorOnMainThread_withObject_waitUntilDone_("clearOutput:", "", False)
 
         script = self.state.transcribe_cmd()
-        if not script:
-            self.append_output_async(
-                "Error: Could not locate install directory automatically.\n"
-                "Please reinstall the DragTranscribe folder to /Applications and try again."
-            )
-            return
-        if not os.path.isfile(script):
-            self.append_output_async(
-                f"Error: script not found:\n{script}\n"
-                "Reinstall the DragTranscribe folder to /Applications."
-            )
+        if not script or not os.path.isfile(script):
+            self.append_output_async("Error: Install folder not found. Please reinstall DragTranscribe to /Applications.")
+            self._show_reinstall_alert()
             return
         if not os.access(script, os.X_OK):
             self.append_output_async(
@@ -306,7 +266,6 @@ class DropView(NSView):
     def concludeDragOperation_(self, sender):
         pass
 
-
 def build_ui():
     app = NSApplication.sharedApplication()
     state = AppState()
@@ -321,7 +280,6 @@ def build_ui():
     bounds = content.bounds()
     margin = 16.0
 
-    # Top path field (shows last dropped file path or hint)
     path_field = NSTextField.alloc().initWithFrame_(NSMakeRect(
         margin,
         bounds.size.height - margin - 32,
@@ -335,7 +293,6 @@ def build_ui():
     path_field.setAutoresizingMask_(NSViewWidthSizable | NSViewMinYMargin)
     path_field.unregisterDraggedTypes()
 
-    # Quit button
     quit_btn = NSButton.alloc().initWithFrame_(NSMakeRect(
         bounds.size.width - margin - 80.0,
         margin,
@@ -347,7 +304,6 @@ def build_ui():
     quit_btn.setAction_("terminate:")
     quit_btn.setAutoresizingMask_(NSViewMinYMargin)
 
-    # Output log area (fills remaining space)
     output_top = path_field.frame().origin.y - 12.0
     output_height = output_top - (margin + 32)
     scroll_frame = NSMakeRect(margin, margin + 36, bounds.size.width - (margin * 2), output_height)
@@ -365,7 +321,6 @@ def build_ui():
         pass
     scroll.setDocumentView_(text_view)
 
-    # Drop view overlay (no install-field)
     drop_view = DropView.alloc().initWithFrame_textField_output_state_(
         bounds, path_field, text_view, state
     )
@@ -380,11 +335,9 @@ def build_ui():
     window.makeKeyAndOrderFront_(None)
     return app
 
-
 def main():
     app = build_ui()
     app.run()
-
 
 if __name__ == "__main__":
     main()
