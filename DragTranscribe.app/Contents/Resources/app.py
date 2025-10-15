@@ -1,4 +1,4 @@
-# app.py — simplified install detection without persisting preferences
+# app.py — simplified install detection with startup diagnostics (no prefs)
 import os, sys, unicodedata, subprocess, threading, objc, pathlib
 from AppKit import (
     NSApplication, NSApp, NSWindow, NSView, NSButton, NSTextField, NSTextView,
@@ -187,57 +187,6 @@ class DropView(NSView):
 
         self._ensure_model_then(run_transcribe)
 
-    def draggingEntered_(self, sender):
-        return NSDragOperationCopy
-
-    def draggingUpdated_(self, sender):
-        return NSDragOperationCopy
-
-    def prepareForDragOperation_(self, sender):
-        return True
-
-    def _path_from_url(self, u: NSURL):
-        try:
-            if hasattr(u, "isFileURL") and u.isFileURL():
-                return u.path()
-            if hasattr(u, "filePathURL"):
-                fpu = u.filePathURL()
-                if fpu is not None:
-                    return fpu.path()
-        except Exception as e:
-            print(f"[path_from_url] error: {e}")
-        return None
-
-    def performDragOperation_(self, sender):
-        pb = sender.draggingPasteboard()
-
-        urls = pb.readObjectsForClasses_options_([NSURL], None)
-        if urls:
-            for u in urls:
-                p = self._path_from_url(u)
-                if p:
-                    p = _normalize(p)
-                    self.text_field.setStringValue_(p)
-                    self.output_view.setString_("")
-                    self.start_transcribe_for_path(p)
-                    return True
-
-        try:
-            files = pb.propertyListForType_("NSFilenamesPboardType")
-        except Exception:
-            files = None
-        if files and len(files) > 0:
-            p = _normalize(files[0])
-            self.text_field.setStringValue_(p)
-            self.output_view.setString_("")
-            self.start_transcribe_for_path(p)
-            return True
-
-        return False
-
-    def concludeDragOperation_(self, sender):
-        pass
-
 def build_ui():
     app = NSApplication.sharedApplication()
     state = AppState()
@@ -297,6 +246,29 @@ def build_ui():
         bounds, path_field, text_view, state
     )
     drop_view.setAutoresizingMask_(NSViewWidthSizable | NSViewHeightSizable)
+
+    # --- Startup diagnostics ---
+    try:
+        mb = NSBundle.mainBundle()
+        bundle_path = str(mb.bundlePath()) if mb is not None else "<none>"
+    except Exception:
+        bundle_path = "<error>"
+    parent_dir = os.path.dirname(bundle_path) if bundle_path.endswith('.app') else '<unknown>'
+    transcribe_path = os.path.join(parent_dir, 'bin', 'transcribe.sh') if parent_dir not in (None, '<unknown>') else '<unknown>'
+    found = os.path.isfile(transcribe_path) if isinstance(transcribe_path, str) else False
+
+    startup_msg = (
+        "DragTranscribe startup info\n"
+        f"  App bundle: {bundle_path}\n"
+        f"  Install dir (parent of .app): {parent_dir}\n"
+        f"  Looking for: {transcribe_path}\n"
+        f"  bin/transcribe.sh found: {'YES' if found else 'NO'}\n\n"
+    )
+    text_view.setString_(startup_msg)
+    try:
+        print(startup_msg)
+    except Exception:
+        pass
 
     content.registerForDraggedTypes_(DropView.DROP_TYPES)
     content.addSubview_(drop_view)
