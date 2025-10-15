@@ -1,6 +1,6 @@
 # DragTranscribe
 
-DragTranscribe creates subtitle files and embeds them into videos. Drop a video file or a folder of videos onto the app, and it will generate accurate subtitle files (`.srt`) and create a new, subtitled version of your video (`_subbed.mp4`).
+DragTranscribe creates subtitle files and embeds them into videos. Drop a video file, and it will generate accurate subtitle file (`.srt`) and create a new, subtitled version of your video (`_subbed.mp4`).
 
 It's designed to be simple, private, and work entirely on your computer. This is especially for deaf people who need subtitled videos to understand what's being said.
 
