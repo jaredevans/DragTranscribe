@@ -1,100 +1,55 @@
-# 🎬 DragTranscribe (macOS)
+# DragTranscribe
 
-**Drag a video into the app and get a `.srt` subtitle and a subtitled `.mp4` automatically and offline.**  
+DragTranscribe creates subtitle files and embeds them into videos. Drop a video file or a folder of videos onto the app, and it will generate accurate subtitle files (`.srt`) and create a new, subtitled version of your video (`_subbed.mp4`).
 
----
+It's designed to be simple, private, and work entirely on your computer. This is especially for deaf people who need subtitled videos to understand what's being said.
 
-## ✨ What it does
+## How to Install and Use
 
-- ✅ Generates a standard `.srt` subtitle file  
-- ✅ Creates `YourVideo_subbed.mp4` with **soft** subtitles (QuickTime-friendly)  
-- 🧠 Auto language detection; translates to English when needed!  
-- 🔒 100% local processing (privacy-friendly)  
-- 🧰 Batch mode supported
+Follow these steps carefully to get the app working correctly on macOS.
 
----
+### Step 1: Download the App
 
-## 🧩 Requirements
+1.  Go to the [**Releases page**](https://github.com/jared-j-evans/DragTranscribe/releases) on GitHub.
+2.  Download the `DragTranscribe-1.0.0.dmg` file.
 
-- macOS **12.0+** on **Apple Silicon** (M1/M2/M3)  
-- ~**3 GB** free disk for the AI model download (first run only)  
-- Internet connection for the one-time model download
+### Step 2: Install the App
 
----
+1.  Open the `DragTranscribe-1.0.0.dmg` file you downloaded.
+2.  A new window will appear. Drag the **DragTranscribe** folder into your **Applications** folder.
 
-## 📦 Install (DMG)
+### Step 3: Give the App Permission to Run (Very Important!)
 
-1. **Download** `DragTranscribe-1.0.0.dmg` from the Releases on the top-right side of this page.
-2. **Open** the DMG.
-3. **Drag the entire `DragTranscribe` folder** to the **Applications** shortcut in the DMG window.  
-4. Eject the DragTranscribe DMG on your Desktop.
+macOS has security features that you need to approve manually for the app to work. You only need to do this once.
 
-Your Applications folder should now contain:
+1.  Go to your **Applications** folder and open the **DragTranscribe** folder.
+2.  Double-click the `1-Allow-Run.command` file.
+3.  You will likely see a warning that says the file cannot be opened. Click **OK**.
+4.  Open **System Settings** > **Privacy & Security**.
+5.  Scroll down to the "Security" section. You will see a message that "`1-Allow-Run.command` was blocked." Click the **Open Anyway** button.
+6.  A terminal window will open and run a quick setup. It will close automatically.
 
-```
-/Applications/DragTranscribe/
-├─ DragTranscribe.app
-├─ 1-Allow-Run.command
-├─ 2-Download-Model.command
-├─ Transcribe.command
-├─ bin/        (ffmpeg, whisper-cli, transcribe.sh)
-└─ models/     (AI model is downloaded here on first run)
-└─ video/     (test.mp4 for you to test with. Also for batch processing)
-```
+### Step 4: Start Transcribing!
 
----
+1.  In the **DragTranscribe** folder, double-click the **DragTranscribe.app** to open it.
+2.  The first time you open it, you may see another security warning. Just like before, go to **System Settings** > **Privacy & Security** and click **Open Anyway**.
+3.  Drag any video file from your computer and drop it onto the app window.
 
-## ▶️ First-time setup (one-time)
+### Step 5: Download the AI Model (First Time Only)
 
-1. Open **/Applications/DragTranscribe/**.
-2. Double-click **`1-Allow-Run.command`**  
-   - Clears macOS quarantine flags and sets execute permissions.
-   - If macOS warns you, Go to **System Settings → Privacy & Security → Open Anyway**.
----
+1.  The first time you drop a file, the app will ask if you want to download the AI model. This is a large file (about 3 GB), so it may take some time.
+2.  Click **Download**. The app will show the download progress in its window. Please be patient.
+3.  Once the download is complete, the transcription will start automatically.
 
-## 🚀 Use the app
+### What Happens Next
 
-1. Launch **`DragTranscribe.app`**.  
-   - The app will **auto-detect** its install folder. If it can’t, click **Set Install…** and choose the `DragTranscribe` folder in **Applications**.
-   - If macOS warns you, Go to **System Settings → Privacy & Security → Open Anyway**.
-2. **First model download** (one-time):
-   - If the model isn’t present when transcribing, the app will prompt to download it (~3 GB) into `models/`. This will take a while so be patient.
-   - Or run **`2-Download-Model.command`** manually to fetch it ahead of time.
-3. **Transcribe a single file**:
-   - Drag a video (`.mp4`, `.mov`, `.mkv`, `.webm`, `.avi`) into the app window.
-   - **Transcribe starts automatically** and watch the log.
-   - Subtitles file and subbed video appear next to your video:
-     - `YourVideo.srt`
-     - `YourVideo_subbed.mp4`
+For each file you drop on the app, it will:
 
----
+1.  **Create a subtitle file:** A file named `YourFileName.srt` will be saved in the same folder as the original file. This is a standard subtitle file you can use with media players like VLC.
+2.  **Create a subtitled video:** A new video file named `YourFileName_subbed.mp4` will also be created. This new video has the subtitles embedded in it, so you can see them when you play it in QuickTime or other players.
 
-## 📁 Batch mode (multiple files)
+The app is smart: if it sees that a video already has a `.srt` file or a `_subbed.mp4` version, it will skip it.
 
-1. Put videos into:  
-   `/Applications/DragTranscribe/video/`
-2. Double-click **`Transcribe.command`**.  
-   The script:
-   - Skips files already having `.srt` or named with `_subbed`
-   - Produces `.srt` and `_subbed.mp4` next to each original
+## License
 
----
-
-## 🔧 Troubleshooting
-
-- **App says it can’t open**  
-  → Right-click the app → **Open** → **Open** (one-time approval)
-
-- **“Model not found”**  
-  → Accept the in-app prompt for model download **or** run `2-Download-Model.command`
-
-- **Nothing happens when running scripts**  
-  → Make sure you ran **`1-Allow-Run.command`** once
-
----
-
-## 🔒 Full Privacy
-
-All audio/video/subtitles stays on your Mac. No data leaves your machine.
-
----
+This software is available under the [MIT License](LICENSE).
