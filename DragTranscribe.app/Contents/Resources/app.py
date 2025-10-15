@@ -1,4 +1,4 @@
-# app.py — simplified install directory logic
+# app.py — simplified install detection without persisting preferences
 import os, sys, unicodedata, subprocess, threading, objc, pathlib
 from AppKit import (
     NSApplication, NSApp, NSWindow, NSView, NSButton, NSTextField, NSTextView,
@@ -8,10 +8,9 @@ from AppKit import (
     NSViewWidthSizable, NSViewHeightSizable, NSViewMinYMargin,
     NSDragOperationCopy, NSSmallSquareBezelStyle
 )
-from Foundation import NSURL, NSUserDefaults, NSBundle
+from Foundation import NSURL, NSBundle
 
 APP_ID = "com.example.dragtranscribe"
-PREF_INSTALL_DIR = "InstallDir"
 
 def _normalize(p: str) -> str:
     return unicodedata.normalize("NFC", p)
@@ -44,7 +43,6 @@ def _run_transcribe_stream(cmd_argv, on_line, on_done):
         on_done(rc)
 
 def _app_parent_dir() -> str | None:
-    """Return the directory containing DragTranscribe.app."""
     try:
         mb = NSBundle.mainBundle()
         if mb is not None:
@@ -55,44 +53,18 @@ def _app_parent_dir() -> str | None:
         pass
     return None
 
-def _install_dir_guess() -> str | None:
+def _detect_install_dir() -> str | None:
     parent = _app_parent_dir()
-    if parent:
-        candidate = os.path.join(parent, "bin", "transcribe.sh")
-        if os.path.isfile(candidate):
-            return parent
+    if parent and os.path.isfile(os.path.join(parent, "bin", "transcribe.sh")):
+        return parent
+    env_override = os.environ.get("DRAGTRANSCRIBE_INSTALL_DIR")
+    if env_override and os.path.isfile(os.path.join(env_override, "bin", "transcribe.sh")):
+        return env_override
     return None
 
 class AppState:
     def __init__(self):
-        self.install_dir = None
-        self.load_prefs()
-
-        env_override = os.environ.get("DRAGTRANSCRIBE_INSTALL_DIR")
-        if not self.install_dir and env_override:
-            if os.path.isfile(os.path.join(env_override, "bin", "transcribe.sh")):
-                self.install_dir = env_override
-                self.save_prefs()
-
-        if not self.install_dir:
-            guess = _install_dir_guess()
-            if guess:
-                self.install_dir = guess
-                self.save_prefs()
-
-    def load_prefs(self):
-        defaults = NSUserDefaults.standardUserDefaults()
-        val = defaults.stringForKey_(PREF_INSTALL_DIR)
-        if val:
-            self.install_dir = str(val)
-
-    def save_prefs(self):
-        defaults = NSUserDefaults.standardUserDefaults()
-        if self.install_dir:
-            defaults.setObject_forKey_(self.install_dir, PREF_INSTALL_DIR)
-        else:
-            defaults.removeObjectForKey_(PREF_INSTALL_DIR)
-        defaults.synchronize()
+        self.install_dir = _detect_install_dir()
 
     def transcribe_cmd(self):
         if not self.install_dir:
