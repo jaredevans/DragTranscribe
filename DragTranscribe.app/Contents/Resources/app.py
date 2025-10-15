@@ -1,4 +1,4 @@
-# app.py — simplified install detection with startup diagnostics (no prefs)
+# app.py — DragTranscribe minimal GUI with D&D, streaming logs, and Cmd+Q quit
 import os, sys, unicodedata, subprocess, threading, objc, pathlib
 from AppKit import (
     NSApplication, NSApp, NSWindow, NSView, NSButton, NSTextField, NSTextView,
@@ -6,7 +6,8 @@ from AppKit import (
     NSMakeRect, NSBackingStoreBuffered,
     NSWindowStyleMaskTitled, NSWindowStyleMaskClosable, NSWindowStyleMaskResizable,
     NSViewWidthSizable, NSViewHeightSizable, NSViewMinYMargin,
-    NSDragOperationCopy, NSSmallSquareBezelStyle
+    NSDragOperationCopy, NSSmallSquareBezelStyle,
+    NSEventModifierFlagCommand,
 )
 from Foundation import NSURL, NSBundle
 
@@ -16,6 +17,7 @@ def _normalize(p: str) -> str:
     return unicodedata.normalize("NFC", p)
 
 def _run_transcribe_stream(cmd_argv, on_line, on_done):
+    """Run a subprocess and stream combined stdout/stderr line by line."""
     try:
         env = os.environ.copy()
         env.setdefault("LC_ALL", "en_US.UTF-8")
@@ -43,6 +45,7 @@ def _run_transcribe_stream(cmd_argv, on_line, on_done):
         on_done(rc)
 
 def _app_parent_dir() -> str | None:
+    """If running from a bundled .app, return its parent directory (the install folder)."""
     try:
         mb = NSBundle.mainBundle()
         if mb is not None:
@@ -54,6 +57,7 @@ def _app_parent_dir() -> str | None:
     return None
 
 def _detect_install_dir() -> str | None:
+    """Find the install dir by checking for bin/transcribe.sh next to the .app, or via env override."""
     parent = _app_parent_dir()
     if parent and os.path.isfile(os.path.join(parent, "bin", "transcribe.sh")):
         return parent
@@ -165,7 +169,7 @@ class DropView(NSView):
         # no-op; could add a little UI flash if desired
         pass
 
-    # ---------- existing helpers (unchanged) ----------
+    # ---------- existing helpers ----------
     def _show_reinstall_alert(self):
         alert = NSAlert.alloc().init()
         alert.setMessageText_("Install folder not found")
@@ -282,6 +286,9 @@ def build_ui():
     quit_btn.setBezelStyle_(NSSmallSquareBezelStyle)
     quit_btn.setTarget_(NSApp())
     quit_btn.setAction_("terminate:")
+    # ⌘Q keyboard shortcut
+    quit_btn.setKeyEquivalent_("q")
+    quit_btn.setKeyEquivalentModifierMask_(NSEventModifierFlagCommand)
     quit_btn.setAutoresizingMask_(NSViewMinYMargin)
 
     output_top = path_field.frame().origin.y - 12.0
@@ -301,8 +308,9 @@ def build_ui():
         pass
     scroll.setDocumentView_(text_view)
 
+    # Limit DropView to the log area so controls stay clickable
     drop_view = DropView.alloc().initWithFrame_textField_output_state_(
-        bounds, path_field, text_view, state
+        scroll_frame, path_field, text_view, state
     )
     drop_view.setAutoresizingMask_(NSViewWidthSizable | NSViewHeightSizable)
 
@@ -329,13 +337,14 @@ def build_ui():
     except Exception:
         pass
 
+    # Register types on the content view (optional), DropView already handles its own area
     content.registerForDraggedTypes_(DropView.DROP_TYPES)
 
-    # Add views in back-to-front order so DropView sits on top for D&D
+    # Add views in back-to-front order (DropView sits above the log area only)
     content.addSubview_(scroll)      # back
     content.addSubview_(path_field)
     content.addSubview_(quit_btn)
-    content.addSubview_(drop_view)   # frontmost, receives drag events
+    content.addSubview_(drop_view)   # overlay on log area
 
     window.makeKeyAndOrderFront_(None)
     return app
@@ -346,4 +355,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
