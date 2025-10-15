@@ -9,7 +9,6 @@ from AppKit import (
     NSDragOperationCopy, NSSmallSquareBezelStyle
 )
 from Foundation import NSURL, NSUserDefaults, NSBundle
-from Cocoa import NSOpenPanel
 
 
 APP_ID = "com.example.dragtranscribe"
@@ -156,16 +155,14 @@ class AppState:
 class DropView(NSView):
     DROP_TYPES = ["public.file-url", "public.url", "NSFilenamesPboardType"]
 
-    def initWithFrame_textField_output_state_installField_(self, frame, text_field, output_view, state, install_field):
+    def initWithFrame_textField_output_state_(self, frame, text_field, output_view, state):
         self = objc.super(DropView, self).initWithFrame_(frame)
         if self is None:
             return None
         self.text_field = text_field
         self.output_view = output_view
         self.state = state
-        self.install_field = install_field
         self.registerForDraggedTypes_(self.DROP_TYPES)
-        self.updateInstallField_("")
         return self
 
     def appendOutput_(self, s):
@@ -180,31 +177,6 @@ class DropView(NSView):
 
     def clearOutput_(self, _):
         self.output_view.setString_("")
-
-    def updateInstallField_(self, _):
-        if self.state.install_dir:
-            self.install_field.setStringValue_(f"Install: {self.state.install_dir}")
-        else:
-            self.install_field.setStringValue_("Install: (not set)")
-
-    def setInstall_(self, sender):
-        panel = NSOpenPanel.openPanel()
-        panel.setCanChooseFiles_(False)
-        panel.setCanChooseDirectories_(True)
-        panel.setAllowsMultipleSelection_(False)
-        panel.setTitle_("Choose drag-transcribe install folder (containing bin/transcribe.sh)")
-        if panel.runModal() == 1:
-            url = panel.URL()
-            if url:
-                path = url.path()
-                script = os.path.join(path, "bin", "transcribe.sh")
-                if not os.path.isfile(script):
-                    self.append_output_async(f"Error: Expected file not found:\n{script}")
-                else:
-                    self.state.install_dir = path
-                    self.state.save_prefs()
-                    self.performSelectorOnMainThread_withObject_waitUntilDone_("updateInstallField:", "", False)
-                    self.append_output_async(f"Saved install directory:\n{path}")
 
     def _ensure_model_then(self, cont_fn):
         model_path = self.state.model_file()
@@ -254,16 +226,22 @@ class DropView(NSView):
 
         script = self.state.transcribe_cmd()
         if not script:
-            self.append_output_async("Error: Install directory not set. Click 'Set Install…' to choose it.")
+            self.append_output_async(
+                "Error: Could not locate install directory automatically.\n"
+                "Please reinstall the DragTranscribe folder to /Applications and try again."
+            )
             return
         if not os.path.isfile(script):
             self.append_output_async(
                 f"Error: script not found:\n{script}\n"
-                "Choose a valid install with 'Set Install…'."
+                "Reinstall the DragTranscribe folder to /Applications."
             )
             return
         if not os.access(script, os.X_OK):
-            self.append_output_async(f"Error: script is not executable:\n{script}")
+            self.append_output_async(
+                f"Error: script is not executable:\n{script}\n"
+                "Run 1-Allow-Run.command once, then try again."
+            )
             return
 
         def run_transcribe():
@@ -342,12 +320,12 @@ def build_ui():
     content = window.contentView()
     bounds = content.bounds()
     margin = 16.0
-    button_w, button_h = 110.0, 30.0
 
+    # Top path field (shows last dropped file path or hint)
     path_field = NSTextField.alloc().initWithFrame_(NSMakeRect(
         margin,
         bounds.size.height - margin - 32,
-        bounds.size.width - (margin * 2) - button_w,
+        bounds.size.width - (margin * 2),
         28
     ))
     path_field.setEditable_(False)
@@ -357,15 +335,7 @@ def build_ui():
     path_field.setAutoresizingMask_(NSViewWidthSizable | NSViewMinYMargin)
     path_field.unregisterDraggedTypes()
 
-    set_btn = NSButton.alloc().initWithFrame_(NSMakeRect(
-        bounds.size.width - margin - button_w,
-        bounds.size.height - margin - button_h - 2,
-        button_w, button_h
-    ))
-    set_btn.setTitle_("Set Install…")
-    set_btn.setBezelStyle_(1)
-    set_btn.setAutoresizingMask_(NSViewMinYMargin)
-
+    # Quit button
     quit_btn = NSButton.alloc().initWithFrame_(NSMakeRect(
         bounds.size.width - margin - 80.0,
         margin,
@@ -377,19 +347,7 @@ def build_ui():
     quit_btn.setAction_("terminate:")
     quit_btn.setAutoresizingMask_(NSViewMinYMargin)
 
-    install_field = NSTextField.alloc().initWithFrame_(NSMakeRect(
-        margin,
-        bounds.size.height - margin - 32,
-        (bounds.size.width - (margin * 2) - button_w) - 10,
-        28
-    ))
-    install_field.setEditable_(False)
-    install_field.setBezeled_(False)
-    install_field.setBordered_(False)
-    install_field.setSelectable_(False)
-    install_field.setAutoresizingMask_(NSViewWidthSizable | NSViewMinYMargin)
-    install_field.setStringValue_("Install: (not set)")
-
+    # Output log area (fills remaining space)
     output_top = path_field.frame().origin.y - 12.0
     output_height = output_top - (margin + 32)
     scroll_frame = NSMakeRect(margin, margin + 36, bounds.size.width - (margin * 2), output_height)
@@ -407,23 +365,17 @@ def build_ui():
         pass
     scroll.setDocumentView_(text_view)
 
-    drop_view = DropView.alloc().initWithFrame_textField_output_state_installField_(
-        bounds, path_field, text_view, state, install_field
+    # Drop view overlay (no install-field)
+    drop_view = DropView.alloc().initWithFrame_textField_output_state_(
+        bounds, path_field, text_view, state
     )
     drop_view.setAutoresizingMask_(NSViewWidthSizable | NSViewHeightSizable)
 
-    set_btn.setTarget_(drop_view)
-    set_btn.setAction_("setInstall:")
-
     content.registerForDraggedTypes_(DropView.DROP_TYPES)
     content.addSubview_(drop_view)
-    content.addSubview_(install_field)
     content.addSubview_(path_field)
-    content.addSubview_(set_btn)
     content.addSubview_(quit_btn)
     content.addSubview_(scroll)
-
-    drop_view.updateInstallField_("")
 
     window.makeKeyAndOrderFront_(None)
     return app
