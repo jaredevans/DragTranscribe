@@ -82,6 +82,7 @@ class AppState:
         return os.path.join(self.install_dir, "bin", "download_model.sh") if self.install_dir else None
 
 class DropView(NSView):
+    # Accept both modern and legacy pasteboard types
     DROP_TYPES = ["public.file-url", "public.url", "NSFilenamesPboardType"]
 
     def initWithFrame_textField_output_state_(self, frame, text_field, output_view, state):
@@ -93,6 +94,33 @@ class DropView(NSView):
         self.state = state
         self.registerForDraggedTypes_(self.DROP_TYPES)
         return self
+
+    # ---------- small helpers ----------
+    def _first_dropped_path(self, sender) -> str | None:
+        """Return a filesystem path from the current drag, or None."""
+        pboard = sender.draggingPasteboard()
+        try:
+            types = set(pboard.types() or [])
+        except Exception:
+            types = set()
+
+        # Legacy file list
+        if "NSFilenamesPboardType" in types:
+            files = pboard.propertyListForType_("NSFilenamesPboardType") or []
+            if files and isinstance(files, (list, tuple)):
+                return _normalize(str(files[0]))
+
+        # NSURL-based (modern)
+        url = NSURL.URLFromPasteboard_(pboard)
+        if url is not None:
+            try:
+                if bool(url.isFileURL()):
+                    return _normalize(str(url.path()))
+            except Exception:
+                pass
+
+        # Some apps drop a generic public.url that isn't a file; ignore those
+        return None
 
     def appendOutput_(self, s):
         existing = self.output_view.string() or ""
@@ -107,6 +135,37 @@ class DropView(NSView):
     def clearOutput_(self, _):
         self.output_view.setString_("")
 
+    # ---------- drag-n-drop NSDraggingDestination ----------
+    def draggingEntered_(self, sender):
+        # Show copy cursor only if a valid file path is present
+        return NSDragOperationCopy if self._first_dropped_path(sender) else 0
+
+    def draggingUpdated_(self, sender):
+        return NSDragOperationCopy if self._first_dropped_path(sender) else 0
+
+    def prepareForDragOperation_(self, sender):
+        return True
+
+    def performDragOperation_(self, sender):
+        path = self._first_dropped_path(sender)
+        if not path:
+            self.append_output_async("Drop ignored (no file path detected).")
+            return False
+
+        try:
+            self.text_field.setStringValue_(path)
+        except Exception:
+            pass
+
+        # Kick off your existing transcription flow
+        self.start_transcribe_for_path(path)
+        return True
+
+    def concludeDragOperation_(self, sender):
+        # no-op; could add a little UI flash if desired
+        pass
+
+    # ---------- existing helpers (unchanged) ----------
     def _show_reinstall_alert(self):
         alert = NSAlert.alloc().init()
         alert.setMessageText_("Install folder not found")
@@ -271,10 +330,12 @@ def build_ui():
         pass
 
     content.registerForDraggedTypes_(DropView.DROP_TYPES)
-    content.addSubview_(drop_view)
+
+    # Add views in back-to-front order so DropView sits on top for D&D
+    content.addSubview_(scroll)      # back
     content.addSubview_(path_field)
     content.addSubview_(quit_btn)
-    content.addSubview_(scroll)
+    content.addSubview_(drop_view)   # frontmost, receives drag events
 
     window.makeKeyAndOrderFront_(None)
     return app
@@ -285,3 +346,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
