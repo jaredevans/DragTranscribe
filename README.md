@@ -43,6 +43,8 @@ macOS has security features that you need to approve manually for the app to wor
 
 ### What Happens Next
 
+The app can handle multiple video files dragged and dropped at once. It will batch process them, one at a time.
+
 For each file you drop on the app, it will:
 
 1.  **Create a subtitle file:** A file named `YourFileName.srt` will be saved in the same folder as the original file. This is a standard subtitle file you can use with media players like VLC.
