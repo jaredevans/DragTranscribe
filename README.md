@@ -12,7 +12,7 @@ Follow these steps carefully to get the app working correctly on macOS.
 
 ### Step 1: Download the App
 
-1.  Go to the [**Releases page**](https://github.com/jared-j-evans/DragTranscribe/releases) on GitHub.
+1.  Go to the [**Releases page**]((https://github.com/jaredevans/DragTranscribe/releases/tag/1.0)) on GitHub.
 2.  Download the `DragTranscribe-1.0.0.dmg` file.
 
 ### Step 2: Install the App
