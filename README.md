@@ -52,7 +52,7 @@ For each file you drop on the app, it will:
 1.  **Create a subtitle file:** A file named `YourFileName.srt` will be saved in the same folder as the original file. This is a standard subtitle file you can use with media players like VLC.
 2.  **Create a subtitled video:** A new video file named `YourFileName_subbed.mp4` will also be created. This new video has the subtitles embedded in it, so you can see them when you play it in QuickTime or other players.
 
-The app is smart: if it sees that a video already has a `.srt` file or a `_subbed.mp4` version, it will skip it. There is a test.mp4 about Lincoln in the `/video` directory you can drag and drop to test out the subtitles.
+The app is smart: if it sees that a video already has a `.srt` file or a `_subbed.mp4` version, it will skip it. There is a `test.mp4` about Lincoln in the `/video` directory you can drag and drop to test out the subtitles.
 
 ## License
 
