@@ -18,7 +18,7 @@
 		</data>
 		<key>Resources/app.py</key>
 		<data>
-		6f+Q/+zii+B4S3hBvKdkCsFsYdo=
+		e7tmN7+T6dB1e5hYaVhop3VgT2A=
 		</data>
 		<key>Resources/include/python3.13/pyconfig.h</key>
 		<data>
@@ -94,27 +94,27 @@
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/_csv.so</key>
 		<data>
-		pQ9F6GyDRXPpoLNKGPcKkIr6uvM=
+		Ktl4XHE6m/YaQAflY2AcyYMkcms=
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/_ctypes.so</key>
 		<data>
-		YsC1iKPFW+ihsSCITipoRWL0suQ=
+		arFbXTxMMF7MPgL5XXz3jXfra0k=
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/_datetime.so</key>
 		<data>
-		+3rnG7WOxEpiDPasjMe6uV8nTeg=
+		LuMfEyBcYvSRRa2JJoGTMDPuD+Y=
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/_decimal.so</key>
 		<data>
-		+O0lPjF3NKu3RODOfEt7p2XzA5Q=
+		dVAuyafiANAI3x1Gx+TAsF1SIOY=
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/_elementtree.so</key>
 		<data>
-		DRWkADozGioHtJ+nO32w0mezQ5A=
+		EQblYfjYk6bXh/tBHz4HyRXJaek=
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/_hashlib.so</key>
 		<data>
-		zPBKEU/I1tsZDObiO6/97K0KOJc=
+		diANJekalRn1Q4QX8hcxTowI5hA=
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/_heapq.so</key>
 		<data>
@@ -146,7 +146,7 @@
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/_pickle.so</key>
 		<data>
-		c3CexxKG0tZsAVkIPLaQ6AeMSmw=
+		/Js6Xal4AOppoaVVZZcmftRAlY0=
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/_posixshmem.so</key>
 		<data>
@@ -162,7 +162,7 @@
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/_random.so</key>
 		<data>
-		HkzOZKo1D2VdM3+wdms/bQY48uA=
+		Rb1asKfYRMguJO49OnNLPEZ5rgs=
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/_scproxy.so</key>
 		<data>
@@ -186,7 +186,7 @@
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/_ssl.so</key>
 		<data>
-		5QEWE9YP2vujUgRnlBvvh2a7pwU=
+		RNORTU3mwXtA83iBF6oVKJPRIVw=
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/_statistics.so</key>
 		<data>
@@ -194,11 +194,11 @@
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/_struct.so</key>
 		<data>
-		D3OiApAtBx/83K4cG3OuErtNdoQ=
+		pa+hVW6LVO9B4YWNEj1ahdhfB3s=
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/_testcapi.so</key>
 		<data>
-		XGb5L7M7TxthCiGzy8xZxPxxoH4=
+		p7oKcIw8zFSq9uz5I4P0i6lclXY=
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/_testinternalcapi.so</key>
 		<data>
@@ -226,11 +226,11 @@
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/math.so</key>
 		<data>
-		9DRuviWWcMuKYqZ1bKwb9KLdbTY=
+		t9Vud2nDa9P4m+uoMODakcdWpms=
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/mmap.so</key>
 		<data>
-		H/8mez2xJri3goN6JKqsQF6WpZ0=
+		GF3yQA/HS/KS9gC4t0jty5QfkpI=
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/objc/_objc.so</key>
 		<data>
@@ -238,7 +238,7 @@
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/pyexpat.so</key>
 		<data>
-		AvqsY+c1Y2kG6WE4H82wBJvSKec=
+		uOKK3bg4YuKEZA494n9XTChb+CQ=
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/resource.so</key>
 		<data>
@@ -254,11 +254,11 @@
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/unicodedata.so</key>
 		<data>
-		SZ2Pj+JKGigJaXR/eKwSNtW08FQ=
+		UivoYlIg5vBSSjzP6HiOmKG7dkU=
 		</data>
 		<key>Resources/lib/python3.13/lib-dynload/zlib.so</key>
 		<data>
-		HDC8a4yWtlie130cqX1NpDH3PwM=
+		ekiGeIvPbSsPpkgxQM/vAihF0Us=
 		</data>
 		<key>Resources/lib/python3.13/pkg_resources/__init__.py</key>
 		<data>
@@ -346,7 +346,7 @@
 		</data>
 		<key>Resources/lib/python313.zip</key>
 		<data>
-		h5rHQ8lrGMOI7dnbZpiCq6jQi6E=
+		9UvqrSWgq8cD99oudf2vCzEIJUo=
 		</data>
 		<key>Resources/openssl.ca/cert.pem</key>
 		<data>
@@ -358,11 +358,11 @@
 		</data>
 		<key>Resources/site.pyc</key>
 		<data>
-		tVUnE+gqh7uGOmkcOGXg/JMmcx8=
+		rUPufTiBX8CoT/hxSX01txcvepQ=
 		</data>
 		<key>Resources/zlib.cpython-313-darwin.so</key>
 		<data>
-		HDC8a4yWtlie130cqX1NpDH3PwM=
+		ekiGeIvPbSsPpkgxQM/vAihF0Us=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -371,19 +371,19 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			TRSHlRUy6LvNroc1NpPBNwKCmCo=
+			VFDEVDSk7D7uQVl7pp/1ZCppMNI=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"4d1487951532e8bbcdae87353693c1370282982a"</string>
+			<string>cdhash H"5450c45434a4ec3eee41597ba69ff5642a6930d2"</string>
 		</dict>
 		<key>Frameworks/libcrypto.3.dylib</key>
 		<dict>
 			<key>cdhash</key>
 			<data>
-			zu8DefzVVcBpPZFL6HEN4BPOmnQ=
+			LNOgJ21a5FPInBE5dsxdmM9MBEc=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"ceef0379fcd555c0693d914be8710de013ce9a74"</string>
+			<string>cdhash H"2cd3a0276d5ae453c89c113976cc5d98cf4c0447"</string>
 		</dict>
 		<key>Frameworks/liblzma.5.dylib</key>
 		<dict>
@@ -412,19 +412,19 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			R1B3Rrd/q2bSOvxdW3n0Yh4Cm+E=
+			Vztgb9sOvKBDN578RIm6zOad6Y8=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"47507746b77fab66d23afc5d5b79f4621e029be1"</string>
+			<string>cdhash H"573b606fdb0ebca043379efc4489bacce69de98f"</string>
 		</dict>
 		<key>MacOS/python</key>
 		<dict>
 			<key>cdhash</key>
 			<data>
-			1aRl1jstdLQw5KGrDeo4zhCLLOI=
+			OgxaGfsyDTSX4YpmaJbptFdvUHI=
 			</data>
 			<key>requirement</key>
-			<string>cdhash H"d5a465d63b2d74b430e4a1ab0dea38ce108b2ce2"</string>
+			<string>cdhash H"3a0c5a19fb320d3497e18a666896e9b4576f5072"</string>
 		</dict>
 		<key>Resources/DragTranscribe.icns</key>
 		<dict>
@@ -451,7 +451,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			oIDCPgadfJa7WkvwtlVAZNp+AUf8uLslf9sM91zAxqs=
+			BcyRJyU7ovjumNbej0rpjSCROopOmQAwUcOLfIlVf8E=
 			</data>
 		</dict>
 		<key>Resources/include/python3.13/pyconfig.h</key>
@@ -584,42 +584,42 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			5ZR+NF9BJ8gVScgQk09CrZsYVb4SUyi/KBsv4HplzvA=
+			d8Uzdo+GEhqDs4+m+OA7B/JgTjT3h3HYc1Jc2NJT0S8=
 			</data>
 		</dict>
 		<key>Resources/lib/python3.13/lib-dynload/_ctypes.so</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			CQRdpgmaWqpg14n7cyk8hbmlbPnTudTXVkDWga0juCU=
+			6+pi5YPdkaVTjGyLTJjkqi8/TNda4m7/dmsuk9iEFzE=
 			</data>
 		</dict>
 		<key>Resources/lib/python3.13/lib-dynload/_datetime.so</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			QzPb4OgLE93pk1IzTrDYnZODD6fQAZ6jVY0WhfkFnHM=
+			oUg4GcSjN1Fc+CWBT/8+su8dsOu15ldCl8mnJcjPB6I=
 			</data>
 		</dict>
 		<key>Resources/lib/python3.13/lib-dynload/_decimal.so</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			I0MRCO/UhNNtskTag6PPmSsGPePdjhdYy+tihxGWCwA=
+			Jzfo3ULOEC1PPMcruDbYZOvviXEqkP9+mn2hqBQbvCc=
 			</data>
 		</dict>
 		<key>Resources/lib/python3.13/lib-dynload/_elementtree.so</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			HGmQSl/EQmXr73AOUMl61/Gfy5CSeK0hpZASRGqyLWo=
+			NiMZDl3ZX15thjlxC5bnCmc/xkHwrLgCWbMm416SNrU=
 			</data>
 		</dict>
 		<key>Resources/lib/python3.13/lib-dynload/_hashlib.so</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			5iLGN3ESHIotYoiFd4S8lmTkqTyPyrtEQ1YqCRL3Vhc=
+			1Gdrn0XQQZP+9Hz2KTqwB70k2pSElzBuJBsxXV7Bjas=
 			</data>
 		</dict>
 		<key>Resources/lib/python3.13/lib-dynload/_heapq.so</key>
@@ -675,7 +675,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			LLeC/7T4Cc7BVm8jDzuahwz6U091GNvJ99zkoh7pmlU=
+			w+ISyGgjou3v2wvvFmR4tagGDkV9HLEkJ31biSUyVXE=
 			</data>
 		</dict>
 		<key>Resources/lib/python3.13/lib-dynload/_posixshmem.so</key>
@@ -703,7 +703,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			EUKdHxuzyBiGmrwzAWhGXWcBFfh8I9KfSgypfvmg6/w=
+			gFtDojZ71wUBejnq6cJoQLyJ3Z1Shl/cWGC1LjmCSYo=
 			</data>
 		</dict>
 		<key>Resources/lib/python3.13/lib-dynload/_scproxy.so</key>
@@ -745,7 +745,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			XfoAjyacCc40QDOgn4CcMnF/bUuBldKv+xUMwja5w8c=
+			38OMyvSrtjjBRUujViJwuKifQ3lDMtCS+2XHArLNUvw=
 			</data>
 		</dict>
 		<key>Resources/lib/python3.13/lib-dynload/_statistics.so</key>
@@ -759,14 +759,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			uJS+FS6h4tzsfPQZO2HDq96ZIPbQuQe6Jae20Drg6e8=
+			2EL5y9JabDB04pNPmh4ybbnJXkFuSRZKcAVMh6tv5OU=
 			</data>
 		</dict>
 		<key>Resources/lib/python3.13/lib-dynload/_testcapi.so</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			XBzVbePeCl5Pz+iIjb0Ey6sEbXEFumBplVMWqjiOIrk=
+			Hr5OWuSSaKKjzsYeDHhHvUOkPPztN1WCysi5wHPhWhw=
 			</data>
 		</dict>
 		<key>Resources/lib/python3.13/lib-dynload/_testinternalcapi.so</key>
@@ -815,14 +815,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			86ecsVbyCpARcG8PjtI58gJwkTq1gZyv7JDxr1GUT98=
+			fSmo5QRMBVTGalo6cKW744EsIW9Pq4vL2OC9MHFH9+o=
 			</data>
 		</dict>
 		<key>Resources/lib/python3.13/lib-dynload/mmap.so</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			5oC8y+JOJILlV/ajgGv6zEkrNee2TwIT+c6HtdYcY58=
+			Z+WcKsmo7/XMaa9iCyOzCVcXQ0NaBPKGgyjA27EwPt0=
 			</data>
 		</dict>
 		<key>Resources/lib/python3.13/lib-dynload/objc/_objc.so</key>
@@ -836,7 +836,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			xp8QSMrKqeeq2NV8ARMan3Z5OaQQPvKeAiMIGOBz2f4=
+			CFEqWHYuU0iB5B0N8cLQ3lWb084IJAVBG6Jv2A8BT4w=
 			</data>
 		</dict>
 		<key>Resources/lib/python3.13/lib-dynload/resource.so</key>
@@ -864,14 +864,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			MPoQfj7qASkBdOm4CXdlX8134+NJpNYINqGNTY758Zg=
+			64GEcBuZqmOkq8SkZl1sD2UUiVlCbLKQcRk+mEviBT4=
 			</data>
 		</dict>
 		<key>Resources/lib/python3.13/lib-dynload/zlib.so</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			BlPgMTbMQlp3INU2MMP3nXjpbn39pLAXfJJT/489aN4=
+			DAiUbVTFfbRIhEZB+Qgqw7+U6yYvyJyz/PhEZx971Lw=
 			</data>
 		</dict>
 		<key>Resources/lib/python3.13/pkg_resources/__init__.py</key>
@@ -1030,7 +1030,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			KrX6GYmF8JrPU1m102XwsqG3ajkOIgbpDMZoXlskb3g=
+			iADcvcejhn7juYvZ7u+ky5+yoeKXCOPuy4gV98szWmI=
 			</data>
 		</dict>
 		<key>Resources/openssl.ca/cert.pem</key>
@@ -1051,14 +1051,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			st4tf6j6bIZ6uTvu2AOuYfGcUFR4NMx311lS25VUdok=
+			NQGQbhVqGDNB8ojQRqcCQIn04J8q26NJuK/YL/mjAPQ=
 			</data>
 		</dict>
 		<key>Resources/zlib.cpython-313-darwin.so</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			BlPgMTbMQlp3INU2MMP3nXjpbn39pLAXfJJT/489aN4=
+			DAiUbVTFfbRIhEZB+Qgqw7+U6yYvyJyz/PhEZx971Lw=
 			</data>
 		</dict>
 	</dict>

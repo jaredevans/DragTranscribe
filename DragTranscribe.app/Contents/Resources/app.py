@@ -13,8 +13,10 @@ from Foundation import NSURL, NSBundle
 
 APP_ID = "com.example.dragtranscribe"
 
+
 def _normalize(p: str) -> str:
     return unicodedata.normalize("NFC", p)
+
 
 def _run_transcribe_stream(cmd_argv, on_line, on_done):
     """Run a subprocess and stream combined stdout/stderr line by line."""
@@ -44,6 +46,7 @@ def _run_transcribe_stream(cmd_argv, on_line, on_done):
     finally:
         on_done(rc)
 
+
 def _app_parent_dir() -> str | None:
     try:
         mb = NSBundle.mainBundle()
@@ -55,6 +58,7 @@ def _app_parent_dir() -> str | None:
         pass
     return None
 
+
 def _detect_install_dir() -> str | None:
     parent = _app_parent_dir()
     if parent and os.path.isfile(os.path.join(parent, "bin", "transcribe.sh")):
@@ -63,6 +67,7 @@ def _detect_install_dir() -> str | None:
     if env_override and os.path.isfile(os.path.join(env_override, "bin", "transcribe.sh")):
         return env_override
     return None
+
 
 class AppState:
     def __init__(self):
@@ -83,6 +88,7 @@ class AppState:
     def download_script(self):
         return os.path.join(self.install_dir, "bin", "download_model.sh") if self.install_dir else None
 
+
 class DropView(NSView):
     DROP_TYPES = ["public.file-url", "public.url", "NSFilenamesPboardType"]
 
@@ -100,6 +106,7 @@ class DropView(NSView):
         self.registerForDraggedTypes_(self.DROP_TYPES)
         return self
 
+    # ---------- UI helpers ----------
     def appendOutput_(self, s):
         existing = self.output_view.string() or ""
         if existing and not existing.endswith("\n"):
@@ -116,6 +123,38 @@ class DropView(NSView):
     def clear_output_async(self):
         self.performSelectorOnMainThread_withObject_waitUntilDone_("clearOutput:", "", False)
 
+    def runBlock_(self, block):
+        """PyObjC helper: run a Python callable on the main thread via performSelector..."""
+        try:
+            block()
+        except Exception as e:
+            # Log but don't crash the app
+            self.append_output_async(f"[UI exception] {e!r}")
+
+    def _confirm_download_on_main(self) -> bool:
+        """Present an OK-to-download alert on the main thread. Returns True if OK."""
+        result = {"ok": False}
+        ev = threading.Event()
+
+        def _show():
+            alert = NSAlert.alloc().init()
+            alert.setMessageText_("Whisper model required")
+            alert.setInformativeText_(
+                "The Whisper AI model is missing.\n\n"
+                "Click OK and DragTranscribe will download it now (about 3 GB) and then continue."
+            )
+            alert.addButtonWithTitle_("OK")      # 1000
+            alert.addButtonWithTitle_("Cancel")  # 1001
+            resp = alert.runModal()
+            result["ok"] = (resp == 1000)
+            ev.set()
+
+        # Ensure this runs on the main thread
+        self.performSelectorOnMainThread_withObject_waitUntilDone_("runBlock:", _show, True)
+        ev.wait()
+        return result["ok"]
+
+    # ---------- DnD plumbing ----------
     def _all_dropped_paths(self, sender) -> list[str]:
         """Return a list of file paths from the drop — handles legacy + per-item modern drops."""
         paths: list[str] = []
@@ -155,7 +194,8 @@ class DropView(NSView):
         unique = []
         for p in paths:
             if p not in seen:
-                unique.append(p); seen.add(p)
+                unique.append(p)
+                seen.add(p)
         return unique
 
     def draggingEntered_(self, sender):
@@ -182,6 +222,7 @@ class DropView(NSView):
     def concludeDragOperation_(self, sender):
         pass
 
+    # ---------- Queue & worker ----------
     def enqueue_paths(self, paths: list[str]):
         added = 0
         for p in paths:
@@ -202,15 +243,18 @@ class DropView(NSView):
                 self.worker_thread.start()
 
     def _worker_loop(self):
+        # Ensure model exists first
         gate = threading.Event()
         ok = {"ready": False}
 
-        def after_model():
-            ok["ready"] = True
+        def after_model(ready: bool):
+            ok["ready"] = ready
             gate.set()
 
         self._ensure_model_then(after_model)
-        gate.wait()
+        if not gate.wait(60):  # safety timeout
+            self.append_output_async("❌ Timed out preparing model; queue aborted.")
+            return
         if not ok["ready"]:
             self.append_output_async("❌ Model was not prepared; queue aborted.")
             return
@@ -236,7 +280,9 @@ class DropView(NSView):
             rc_ev = threading.Event()
             rc_holder = {"rc": 1}
 
-            def on_line(line): self.append_output_async(line)
+            def on_line(line):
+                self.append_output_async(line)
+
             def on_done(rc):
                 rc_holder["rc"] = rc
                 rc_ev.set()
@@ -278,59 +324,67 @@ class DropView(NSView):
         self.append_output_async(f"Summary: processed={processed}  failed={failed}")
         self.append_output_async("-" * 48 + "\n")
 
+    # ---------- Alerts & model prep ----------
     def _show_reinstall_alert(self):
-        alert = NSAlert.alloc().init()
-        alert.setMessageText_("Install folder not found")
-        alert.setInformativeText_(
-            "DragTranscribe couldn’t locate its install folder.\n\n"
-            "Make sure you installed the *entire* DragTranscribe folder into /Applications,\n"
-            "then launch DragTranscribe.app from there."
-        )
-        alert.addButtonWithTitle_("OK")
-        alert.runModal()
+        def _show():
+            alert = NSAlert.alloc().init()
+            alert.setMessageText_("Install folder not found")
+            alert.setInformativeText_(
+                "DragTranscribe couldn’t locate its install folder.\n\n"
+                "Make sure you installed the *entire* DragTranscribe folder into /Applications,\n"
+                "then launch DragTranscribe.app from there."
+            )
+            alert.addButtonWithTitle_("OK")
+            alert.runModal()
+        # Ensure main-thread execution
+        self.performSelectorOnMainThread_withObject_waitUntilDone_("runBlock:", _show, True)
 
     def _ensure_model_then(self, cont_fn):
+        """Ensure model exists. If missing, show OK dialog and auto-download on OK.
+        Calls cont_fn(True) when ready, cont_fn(False) on cancel/failure.
+        """
         model_path = self.state.model_file()
         if model_path and os.path.isfile(model_path):
-            cont_fn()
+            cont_fn(True)
             return
 
-        alert = NSAlert.alloc().init()
-        alert.setMessageText_("Whisper model missing")
-        alert.setInformativeText_(
-            "The AI model is not installed.\n\n"
-            "Click Download to get it now (about 3 GB).\n"
-            "Be patient — this only needs to be done once."
-        )
-        alert.addButtonWithTitle_("Download")
-        alert.addButtonWithTitle_("Cancel")
-        resp = alert.runModal()
-
-        if resp != 1000:
+        # Ask once; auto-download if OK
+        if not self._confirm_download_on_main():
             self.append_output_async("Download canceled.")
+            cont_fn(False)
             return
 
         dl = self.state.download_script()
         if not (dl and os.path.isfile(dl) and os.access(dl, os.X_OK)):
             self.append_output_async(f"Error: download script not found or not executable:\n{dl}")
+            cont_fn(False)
             return
 
-        self.append_output_async(f"Starting model download (~3 GB) to:\n{self.state.model_dir()}\n$ {dl}\n")
+        self.append_output_async(
+            f"Starting Whisper model download (~3 GB) to:\n{self.state.model_dir()}\n$ {dl}\n"
+        )
 
         def bg_download():
-            def on_line(line): self.append_output_async(line)
+            def on_line(line):
+                self.append_output_async(line)
+
             def on_done(rc):
                 if rc == 0 and os.path.isfile(self.state.model_file()):
                     self.append_output_async("✅ Model download complete.")
-                    cont_fn()
+                    cont_fn(True)
                 else:
                     self.append_output_async(
                         f"❌ Download failed (exit {rc}). "
-                        "Try again later or run 2-Download-Model.command."
+                        "Please try again later or run 2-Download-Model.command."
                     )
+                    cont_fn(False)
+
             _run_transcribe_stream([dl], on_line, on_done)
 
         threading.Thread(target=bg_download, daemon=True).start()
+
+
+# ---------- App scaffolding ----------
 
 def build_ui():
     app = NSApplication.sharedApplication()
@@ -403,9 +457,11 @@ def build_ui():
     window.makeKeyAndOrderFront_(None)
     return app
 
+
 def main():
     app = build_ui()
     app.run()
+
 
 if __name__ == "__main__":
     main()

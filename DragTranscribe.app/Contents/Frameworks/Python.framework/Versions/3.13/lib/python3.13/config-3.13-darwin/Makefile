@@ -31,8 +31,8 @@ MODLIBS=           $(LOCALMODLIBS) $(BASEMODLIBS)
 VERSION=	3.13
 srcdir=		.
 
-abs_srcdir=	/private/tmp/pythonA3.13-20250814-7108-xmxyes/Python-3.13.7
-abs_builddir=	/private/tmp/pythonA3.13-20250814-7108-xmxyes/Python-3.13.7
+abs_srcdir=	/private/tmp/pythonA3.13-20251007-31977-x2i21s/Python-3.13.8
+abs_builddir=	/private/tmp/pythonA3.13-20251007-31977-x2i21s/Python-3.13.8
 
 
 CC=		clang
@@ -213,7 +213,7 @@ LIPO_32BIT_FLAGS=
 LIPO_INTEL64_FLAGS=
 
 # Environment to run shared python without installed libraries
-RUNSHARED=       DYLD_FRAMEWORK_PATH=/private/tmp/pythonA3.13-20250814-7108-xmxyes/Python-3.13.7
+RUNSHARED=       DYLD_FRAMEWORK_PATH=/private/tmp/pythonA3.13-20251007-31977-x2i21s/Python-3.13.8
 
 # ensurepip options
 ENSUREPIP=      no
