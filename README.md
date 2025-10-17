@@ -26,7 +26,7 @@ macOS has security features that you need to approve manually for the app to wor
 
 1.  Go to your **Applications** folder and open the **DragTranscribe** folder.
 2.  Double-click the `1-Allow-Run.command` file.
-3.  You will likely see a warning that says the file cannot be opened. Click **OK**.
+3.  You will likely see a warning that says the file cannot be opened. Click **OK or Done**.
 4.  Open **System Settings** > **Privacy & Security**.
 5.  Scroll down to the "Security" section. You will see a message that "`1-Allow-Run.command` was blocked." Click the **Open Anyway** button.
 6.  A terminal window will open and run a quick setup. It will close automatically.
