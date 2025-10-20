@@ -346,7 +346,7 @@
 		</data>
 		<key>Resources/lib/python313.zip</key>
 		<data>
-		9UvqrSWgq8cD99oudf2vCzEIJUo=
+		OAKY6Xv1dTbS9HvDz9B3TM3jlis=
 		</data>
 		<key>Resources/openssl.ca/cert.pem</key>
 		<data>
@@ -358,7 +358,7 @@
 		</data>
 		<key>Resources/site.pyc</key>
 		<data>
-		rUPufTiBX8CoT/hxSX01txcvepQ=
+		HT05RpuwX8PoXJcB3gumYL2/6YQ=
 		</data>
 		<key>Resources/zlib.cpython-313-darwin.so</key>
 		<data>
@@ -1030,7 +1030,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			iADcvcejhn7juYvZ7u+ky5+yoeKXCOPuy4gV98szWmI=
+			lbxLPYf8rHTLa/9HxYv+YDynLQLu3IBGzRdF8pHb3i8=
 			</data>
 		</dict>
 		<key>Resources/openssl.ca/cert.pem</key>
@@ -1051,7 +1051,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			NQGQbhVqGDNB8ojQRqcCQIn04J8q26NJuK/YL/mjAPQ=
+			fX9oN5GTlU1JVWTtvOGGkrlFhHaBq/cNZQPu9CsJeUY=
 			</data>
 		</dict>
 		<key>Resources/zlib.cpython-313-darwin.so</key>
