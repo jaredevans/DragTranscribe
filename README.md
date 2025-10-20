@@ -34,7 +34,7 @@ macOS has security features that you need to approve manually for the app to wor
 ### Step 4: Start Transcribing!
 
 1.  In the **DragTranscribe** folder, double-click the **DragTranscribe.app** to open it.
-2.  The first time you open it, you may see another security warning. Just like before, go to **System Settings** > **Privacy & Security** and click **Open Anyway**.
+2.  The first time you open it, you may see another security warning. Just like before, Click **Done** then go to **System Settings** > **Privacy & Security** and click **Open Anyway**.
 3.  Drag any video file from your computer and drop it onto the app window.
 
 ### Step 5: Download the AI Model (First Time Only)
