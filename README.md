@@ -1,5 +1,7 @@
 # DragTranscribe
 
+[ASL version on YouTube](https://www.youtube.com/watch?v=86dfMXT2DSo)
+
 DragTranscribe creates subtitle files and embeds them into videos. Drop a video file, and it will generate accurate subtitle file (`.srt`) and create a new, subtitled version of your video (`_subbed.mp4`).  
 
 Powered by OpenAI’s Whisper AI model, the app not only transcribes English audio into English subtitles but can also translate speech from 100 languages into English subtitles.
@@ -8,7 +10,7 @@ It's designed to be simple, private, and work entirely on your computer. This is
 
 ## How to Install and Use
 
-[ASL Version on YouTube](https://youtu.be/UuTiH0qP9GY)
+[ASL version on YouTube](https://youtu.be/UuTiH0qP9GY)
 
 Follow these steps carefully to get the app working on Mac computers with Apple Silicon (M1, M2, M3, M4, or M5 chips). You will need to be running recent MacOS such as Tahoe or Sequoia.  Sonoma or older MacOS will not work.
 
