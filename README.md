@@ -8,6 +8,8 @@ It's designed to be simple, private, and work entirely on your computer. This is
 
 ## How to Install and Use
 
+[ASL Version on YouTube](https://youtu.be/UuTiH0qP9GY)
+
 Follow these steps carefully to get the app working on Mac computers with Apple Silicon (M1, M2, M3, M4, or M5 chips). You will need to be running recent MacOS such as Tahoe or Sequoia.  Sonoma or older MacOS will not work.
 
 ### Step 1: Download the App
