@@ -2,11 +2,13 @@
 
 [ASL version intro on YouTube](https://www.youtube.com/watch?v=86dfMXT2DSo)
 
-DragTranscribe creates subtitle files and embeds them into videos. Drop a video file, and it will generate accurate subtitle file (`.srt`) and create a new, subtitled version of your video (`_subbed.mp4`).  
+DragTranscribe creates subtitle files and embeds them into videos. Drop a video file, and it will generate an accurate subtitle file (.srt) and create a new, subtitled version of your video (_subbed.mp4).
 
 Powered by OpenAI’s Whisper AI model, the app not only transcribes English audio into English subtitles but can also translate speech from 100 languages into English subtitles.
 
-It's designed to be simple, private, and work entirely on your computer. This is especially for deaf people who need subtitled videos to understand what's being said.
+Unlike most online transcription tools, DragTranscribe keeps everything on your computer. The app helps you download the Whisper AI model directly to your device and runs it locally—no internet connection or cloud processing required. That means your videos, subtitles, and voice data never leave your computer, giving you total privacy and control over your content.
+
+It’s simple, private, and built especially for Deaf people and creators who want accurate, accessible subtitles without sending their videos anywhere else.
 
 ## How to Install and Use
 
