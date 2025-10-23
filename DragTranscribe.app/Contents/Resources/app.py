@@ -1,8 +1,8 @@
-# app.py — DragTranscribe GUI with multi-file D&D queue, streaming logs, and Cmd+Q quit
-import os, sys, unicodedata, subprocess, threading, queue, objc
+# app.py — DragTranscribe GUI with multi-file D&D queue, streaming logs, Cmd+Q, and smart Language picker
+import os, unicodedata, subprocess, threading, queue, objc
 from AppKit import (
     NSApplication, NSApp, NSWindow, NSView, NSButton, NSTextField, NSTextView,
-    NSScrollView, NSFont, NSAlert,
+    NSScrollView, NSFont, NSAlert, NSPopUpButton,
     NSMakeRect, NSBackingStoreBuffered,
     NSWindowStyleMaskTitled, NSWindowStyleMaskClosable, NSWindowStyleMaskResizable,
     NSViewWidthSizable, NSViewHeightSizable, NSViewMinYMargin,
@@ -13,18 +13,44 @@ from Foundation import NSURL, NSBundle
 
 APP_ID = "com.example.dragtranscribe"
 
+# Whisper supported languages (display name, code). First entry is Auto.
+_WHISPER_LANGS = [
+    ("Auto (detect)", "auto"),
+    ("Afrikaans", "af"), ("Amharic", "am"), ("Arabic", "ar"), ("Assamese", "as"), ("Azerbaijani", "az"),
+    ("Bashkir", "ba"), ("Belarusian", "be"), ("Bulgarian", "bg"), ("Bengali", "bn"), ("Tibetan", "bo"),
+    ("Breton", "br"), ("Bosnian", "bs"), ("Catalan", "ca"), ("Czech", "cs"), ("Welsh", "cy"),
+    ("Danish", "da"), ("German", "de"), ("Greek", "el"), ("English", "en"), ("Esperanto", "eo"),
+    ("Spanish", "es"), ("Estonian", "et"), ("Basque", "eu"), ("Persian", "fa"), ("Finnish", "fi"),
+    ("Faroese", "fo"), ("French", "fr"), ("Galician", "gl"), ("Gujarati", "gu"), ("Hausa", "ha"),
+    ("Hawaiian", "haw"), ("Hebrew", "he"), ("Hindi", "hi"), ("Croatian", "hr"), ("Haitian Creole", "ht"),
+    ("Hungarian", "hu"), ("Armenian", "hy"), ("Indonesian", "id"), ("Icelandic", "is"), ("Italian", "it"),
+    ("Japanese", "ja"), ("Javanese", "jw"), ("Georgian", "ka"), ("Kazakh", "kk"), ("Khmer", "km"),
+    ("Kannada", "kn"), ("Korean", "ko"), ("Latin", "la"), ("Luxembourgish", "lb"), ("Lingala", "ln"),
+    ("Lao", "lo"), ("Lithuanian", "lt"), ("Latvian", "lv"), ("Malagasy", "mg"), ("Māori", "mi"),
+    ("Macedonian", "mk"), ("Malayalam", "ml"), ("Mongolian", "mn"), ("Marathi", "mr"), ("Malay", "ms"),
+    ("Maltese", "mt"), ("Burmese", "my"), ("Nepali", "ne"), ("Dutch", "nl"), ("Norwegian Nynorsk", "nn"),
+    ("Norwegian", "no"), ("Occitan", "oc"), ("Punjabi", "pa"), ("Polish", "pl"), ("Pashto", "ps"),
+    ("Portuguese", "pt"), ("Romanian", "ro"), ("Russian", "ru"), ("Sanskrit", "sa"), ("Sindhi", "sd"),
+    ("Sinhala", "si"), ("Slovak", "sk"), ("Slovenian", "sl"), ("Samoan", "sm"), ("Shona", "sn"),
+    ("Somali", "so"), ("Albanian", "sq"), ("Serbian", "sr"), ("Sundanese", "su"), ("Swedish", "sv"),
+    ("Swahili", "sw"), ("Tamil", "ta"), ("Telugu", "te"), ("Tajik", "tg"), ("Thai", "th"),
+    ("Turkmen", "tk"), ("Tagalog", "tl"), ("Turkish", "tr"), ("Tatar", "tt"), ("Uyghur", "ug"),
+    ("Ukrainian", "uk"), ("Urdu", "ur"), ("Uzbek", "uz"), ("Vietnamese", "vi"), ("Yiddish", "yi"),
+    ("Yoruba", "yo"), ("Chinese", "zh"),
+]
 
 def _normalize(p: str) -> str:
     return unicodedata.normalize("NFC", p)
 
-
-def _run_transcribe_stream(cmd_argv, on_line, on_done):
+def _run_transcribe_stream(cmd_argv, on_line, on_done, env_extra=None):
     """Run a subprocess and stream combined stdout/stderr line by line."""
     try:
         env = os.environ.copy()
         env.setdefault("LC_ALL", "en_US.UTF-8")
         env.setdefault("LANG", "en_US.UTF-8")
         env.setdefault("PYTHONIOENCODING", "utf-8")
+        if env_extra:
+            env.update(env_extra)
 
         p = subprocess.Popen(
             cmd_argv,
@@ -46,7 +72,6 @@ def _run_transcribe_stream(cmd_argv, on_line, on_done):
     finally:
         on_done(rc)
 
-
 def _app_parent_dir() -> str | None:
     try:
         mb = NSBundle.mainBundle()
@@ -58,7 +83,6 @@ def _app_parent_dir() -> str | None:
         pass
     return None
 
-
 def _detect_install_dir() -> str | None:
     parent = _app_parent_dir()
     if parent and os.path.isfile(os.path.join(parent, "bin", "transcribe.sh")):
@@ -67,7 +91,6 @@ def _detect_install_dir() -> str | None:
     if env_override and os.path.isfile(os.path.join(env_override, "bin", "transcribe.sh")):
         return env_override
     return None
-
 
 class AppState:
     def __init__(self):
@@ -88,16 +111,16 @@ class AppState:
     def download_script(self):
         return os.path.join(self.install_dir, "bin", "download_model.sh") if self.install_dir else None
 
-
 class DropView(NSView):
     DROP_TYPES = ["public.file-url", "public.url", "NSFilenamesPboardType"]
 
-    def initWithFrame_textField_output_state_(self, frame, text_field, output_view, state):
+    def initWithFrame_textField_output_langPopup_state_(self, frame, text_field, output_view, lang_popup, state):
         self = objc.super(DropView, self).initWithFrame_(frame)
         if self is None:
             return None
         self.text_field = text_field
         self.output_view = output_view
+        self.lang_popup = lang_popup
         self.state = state
         self.q = queue.Queue()
         self.worker_thread = None
@@ -124,18 +147,14 @@ class DropView(NSView):
         self.performSelectorOnMainThread_withObject_waitUntilDone_("clearOutput:", "", False)
 
     def runBlock_(self, block):
-        """PyObjC helper: run a Python callable on the main thread via performSelector..."""
         try:
             block()
         except Exception as e:
-            # Log but don't crash the app
             self.append_output_async(f"[UI exception] {e!r}")
 
     def _confirm_download_on_main(self) -> bool:
-        """Present an OK-to-download alert on the main thread. Returns True if OK."""
         result = {"ok": False}
         ev = threading.Event()
-
         def _show():
             alert = NSAlert.alloc().init()
             alert.setMessageText_("Whisper model required")
@@ -148,19 +167,14 @@ class DropView(NSView):
             resp = alert.runModal()
             result["ok"] = (resp == 1000)
             ev.set()
-
-        # Ensure this runs on the main thread
         self.performSelectorOnMainThread_withObject_waitUntilDone_("runBlock:", _show, True)
         ev.wait()
         return result["ok"]
 
     # ---------- DnD plumbing ----------
     def _all_dropped_paths(self, sender) -> list[str]:
-        """Return a list of file paths from the drop — handles legacy + per-item modern drops."""
         paths: list[str] = []
         pboard = sender.draggingPasteboard()
-
-        # 1) Legacy (Finder multi-select)
         try:
             files = pboard.propertyListForType_("NSFilenamesPboardType")
             if files and isinstance(files, (list, tuple)):
@@ -169,8 +183,6 @@ class DropView(NSView):
                         paths.append(_normalize(f))
         except Exception:
             pass
-
-        # 2) Modern (per-item public.file-url)
         try:
             items = pboard.pasteboardItems() or []
             for it in items:
@@ -189,7 +201,6 @@ class DropView(NSView):
                     continue
         except Exception:
             pass
-
         seen = set()
         unique = []
         for p in paths:
@@ -222,6 +233,20 @@ class DropView(NSView):
     def concludeDragOperation_(self, sender):
         pass
 
+    # ---------- Language selection ----------
+    def _selected_lang_code(self) -> str | None:
+        """Return None for Auto, otherwise the explicit language code."""
+        try:
+            item = self.lang_popup.selectedItem()
+            if item is None:
+                return None
+            code = item.representedObject()
+            if not code or code == "auto":
+                return None
+            return str(code)
+        except Exception:
+            return None
+
     # ---------- Queue & worker ----------
     def enqueue_paths(self, paths: list[str]):
         added = 0
@@ -243,16 +268,13 @@ class DropView(NSView):
                 self.worker_thread.start()
 
     def _worker_loop(self):
-        # Ensure model exists first
         gate = threading.Event()
         ok = {"ready": False}
-
         def after_model(ready: bool):
             ok["ready"] = ready
             gate.set()
-
         self._ensure_model_then(after_model)
-        if not gate.wait(60):  # safety timeout
+        if not gate.wait(60):
             self.append_output_async("❌ Timed out preparing model; queue aborted.")
             return
         if not ok["ready"]:
@@ -303,11 +325,44 @@ class DropView(NSView):
                 self.q.task_done()
                 continue
 
+            # -------- Build argv + env with SMART language/translate logic --------
+            lang_code = self._selected_lang_code()  # None means Auto (detect)
             argv = [script, path]
+            env_extra = {}
+
+            # Language hint
+            if lang_code:
+                argv += ["--language", lang_code]
+                env_extra["WHISPER_LANG"] = lang_code
+                env_extra["WHISPER_LANG_NAME"] = next((n for n, c in _WHISPER_LANGS if c == lang_code), lang_code)
+                self.append_output_async(f"🌐 Using language: {env_extra['WHISPER_LANG_NAME']} ({lang_code})")
+            else:
+                self.append_output_async("🌐 Language: Auto-detect")
+                env_extra["WHISPER_LANG"] = ""  # allow backend to auto-detect
+
+            # Decision:
+            # - Auto: runtime decide (transcribe if English, else translate)
+            # - Manual English: transcribe
+            # - Manual non-English: translate
+            if lang_code is None:
+                env_extra["WHISPER_TASK"] = "auto"
+                env_extra["WHISPER_AUTO_TRANSLATE"] = "1"
+                argv += ["--auto-translate"]
+                self.append_output_async("🧭 Mode: Auto (transcribe EN, translate non-EN)")
+            elif lang_code.lower() == "en":
+                env_extra["WHISPER_TASK"] = "transcribe"
+                env_extra["WHISPER_TRANSLATE"] = "0"
+                self.append_output_async("🧭 Output: Transcribe (English → English)")
+            else:
+                env_extra["WHISPER_TASK"] = "translate"
+                env_extra["WHISPER_TRANSLATE"] = "1"
+                argv += ["--translate"]
+                self.append_output_async("🧭 Output: Translate to English")
+
             self.append_output_async(f"$ {' '.join(argv)}")
 
             threading.Thread(
-                target=_run_transcribe_stream, args=(argv, on_line, on_done), daemon=True
+                target=_run_transcribe_stream, args=(argv, on_line, on_done), kwargs={"env_extra": env_extra}, daemon=True
             ).start()
 
             rc_ev.wait()
@@ -336,19 +391,14 @@ class DropView(NSView):
             )
             alert.addButtonWithTitle_("OK")
             alert.runModal()
-        # Ensure main-thread execution
         self.performSelectorOnMainThread_withObject_waitUntilDone_("runBlock:", _show, True)
 
     def _ensure_model_then(self, cont_fn):
-        """Ensure model exists. If missing, show OK dialog and auto-download on OK.
-        Calls cont_fn(True) when ready, cont_fn(False) on cancel/failure.
-        """
         model_path = self.state.model_file()
         if model_path and os.path.isfile(model_path):
             cont_fn(True)
             return
 
-        # Ask once; auto-download if OK
         if not self._confirm_download_on_main():
             self.append_output_async("Download canceled.")
             cont_fn(False)
@@ -367,7 +417,6 @@ class DropView(NSView):
         def bg_download():
             def on_line(line):
                 self.append_output_async(line)
-
             def on_done(rc):
                 if rc == 0 and os.path.isfile(self.state.model_file()):
                     self.append_output_async("✅ Model download complete.")
@@ -378,13 +427,24 @@ class DropView(NSView):
                         "Please try again later or run 2-Download-Model.command."
                     )
                     cont_fn(False)
-
             _run_transcribe_stream([dl], on_line, on_done)
-
         threading.Thread(target=bg_download, daemon=True).start()
 
-
 # ---------- App scaffolding ----------
+
+def _populate_language_popup(popup: NSPopUpButton):
+    popup.removeAllItems()
+    for name, code in _WHISPER_LANGS:
+        popup.addItemWithTitle_(name)
+        item = popup.itemAtIndex_(popup.numberOfItems() - 1)
+        try:
+            item.setRepresentedObject_(code)
+        except Exception:
+            pass
+    try:
+        popup.selectItemAtIndex_(0)  # Auto by default
+    except Exception:
+        pass
 
 def build_ui():
     app = NSApplication.sharedApplication()
@@ -392,7 +452,7 @@ def build_ui():
 
     style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskResizable
     window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(
-        NSMakeRect(200, 200, 760, 420), style, NSBackingStoreBuffered, False
+        NSMakeRect(200, 200, 820, 460), style, NSBackingStoreBuffered, False
     )
     window.setTitle_("DragTranscribe")
 
@@ -400,10 +460,36 @@ def build_ui():
     bounds = content.bounds()
     margin = 16.0
 
-    path_field = NSTextField.alloc().initWithFrame_(NSMakeRect(
+    # Language label (wider for the longer text)
+    lang_label_width = 150.0
+    lang_label = NSTextField.alloc().initWithFrame_(NSMakeRect(
         margin,
+        bounds.size.height - margin - 28,
+        lang_label_width, 22
+    ))
+    lang_label.setStringValue_("Language of video:")
+    lang_label.setEditable_(False)
+    lang_label.setBezeled_(False)
+    lang_label.setDrawsBackground_(False)
+    lang_label.setSelectable_(False)
+    lang_label.setAutoresizingMask_(NSViewMinYMargin)
+
+    # Language popup
+    lang_popup_x = margin + lang_label_width + 4.0
+    lang_popup = NSPopUpButton.alloc().initWithFrame_pullsDown_(NSMakeRect(
+        lang_popup_x,
         bounds.size.height - margin - 32,
-        bounds.size.width - (margin * 2),
+        220, 26
+    ), False)
+    _populate_language_popup(lang_popup)
+    lang_popup.setAutoresizingMask_(NSViewMinYMargin)
+
+    # Path field shares the top row with language controls
+    path_field_x = lang_popup_x + 220 + 12
+    path_field = NSTextField.alloc().initWithFrame_(NSMakeRect(
+        path_field_x,
+        bounds.size.height - margin - 32,
+        bounds.size.width - (margin * 2) - (lang_label_width + 4 + 220 + 12),
         28
     ))
     path_field.setEditable_(False)
@@ -413,6 +499,7 @@ def build_ui():
     path_field.setAutoresizingMask_(NSViewWidthSizable | NSViewMinYMargin)
     path_field.unregisterDraggedTypes()
 
+    # Quit button
     quit_btn = NSButton.alloc().initWithFrame_(NSMakeRect(
         bounds.size.width - margin - 80.0,
         margin,
@@ -426,6 +513,7 @@ def build_ui():
     quit_btn.setKeyEquivalentModifierMask_(NSEventModifierFlagCommand)
     quit_btn.setAutoresizingMask_(NSViewMinYMargin)
 
+    # Output area
     output_top = path_field.frame().origin.y - 12.0
     output_height = output_top - (margin + 32)
     scroll_frame = NSMakeRect(margin, margin + 36, bounds.size.width - (margin * 2), output_height)
@@ -443,25 +531,26 @@ def build_ui():
         pass
     scroll.setDocumentView_(text_view)
 
-    drop_view = DropView.alloc().initWithFrame_textField_output_state_(
-        scroll_frame, path_field, text_view, state
+    # DropView (captures drops over the output area)
+    drop_view = DropView.alloc().initWithFrame_textField_output_langPopup_state_(
+        scroll_frame, path_field, text_view, lang_popup, state
     )
     drop_view.setAutoresizingMask_(NSViewWidthSizable | NSViewHeightSizable)
 
     content.registerForDraggedTypes_(DropView.DROP_TYPES)
     content.addSubview_(scroll)
     content.addSubview_(path_field)
+    content.addSubview_(lang_label)
+    content.addSubview_(lang_popup)
     content.addSubview_(quit_btn)
     content.addSubview_(drop_view)
 
     window.makeKeyAndOrderFront_(None)
     return app
 
-
 def main():
     app = build_ui()
     app.run()
-
 
 if __name__ == "__main__":
     main()
